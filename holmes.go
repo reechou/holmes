@@ -151,11 +151,11 @@ func getLogFileName(t time.Time) string {
 	year := now.Year()
 	month := now.Month()
 	day := now.Day()
-	hour := now.Hour()
+	//hour := now.Hour()
 	//minute := now.Minute()
 	//pid := os.Getpid()
-	return fmt.Sprintf("%s.%04d-%02d-%02d-%02d.log",
-		proc, year, month, day, hour)
+	return fmt.Sprintf("%s.%04d-%02d-%02d.log",
+		proc, year, month, day)
 }
 
 type innerLogger struct {
@@ -175,7 +175,7 @@ func (l innerLogger) doPrintf(level LogLevel, format string, v ...interface{}) {
 	}
 	if level >= l.level {
 		funcName, fileName, lineNum := getRuntimeInfo()
-		format = fmt.Sprintf("%5s [%s] (%s:%d) - %s", tagName[level], path.Base(funcName), path.Base(fileName), lineNum, format)
+		format = fmt.Sprintf("%5s [%s](%s:%d) %s", tagName[level], path.Base(funcName), path.Base(fileName), lineNum, format)
 		l.logger.Printf(format, v...)
 		if l.isStdout {
 			log.Printf(format, v...)
@@ -248,6 +248,11 @@ func LogFilePath(p string) func(innerLogger) innerLogger {
 		l.logPath = p
 		return l
 	}
+}
+
+func EveryDay(l innerLogger) innerLogger {
+	l.unit = 24 * time.Hour
+	return l
 }
 
 func EveryHour(l innerLogger) innerLogger {
